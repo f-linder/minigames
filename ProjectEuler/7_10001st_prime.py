@@ -9,14 +9,14 @@ while len(ret) < 10001:
     print(len(ret))
     while not found:
         max_i = math.floor(math.sqrt(test))
-     
+
         for i in range(max_i, 1, -1):
             if test % i == 0:
                 break
             if i == 2:
                 ret.append(test)
-                found = True  
-                
+                found = True
+
         test += 1
 
 print(ret[-1])
