@@ -1,5 +1,3 @@
-import math
-
 number = 600851475143
 ret = []
 i = 2
@@ -12,5 +10,3 @@ while number != 1:
         i += 1
 
 print(ret[-1])
-
-    

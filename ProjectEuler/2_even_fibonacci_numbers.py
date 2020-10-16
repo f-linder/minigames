@@ -12,4 +12,3 @@ while one <= 4000000 or two <= 4000000:
     two += one
 
 print(ret)
-
