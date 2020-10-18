@@ -11,7 +11,6 @@ size_window = 700
 size_default = 20
 # columns, rows
 columns = rows = int(size_window / size_default) 
-print(f"columns: {columns}, rows: {rows}")
 # set dimensions
 window = pygame.display.set_mode((size_window, size_window))
 # set caption and icon
