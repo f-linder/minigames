@@ -7,7 +7,7 @@ pygame.init()
 window = pygame.display.set_mode((800, 800))
 # set caption and icon
 pygame.display.set_caption("Snake")
-icon = pygame.image.load(os.path.dirname(snake.py))
+icon = pygame.image.load()
 pygame.display.set_icon(icon)
 
 running = True
