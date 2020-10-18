@@ -140,7 +140,7 @@ def draw():
     for f in food:
         pygame.draw.rect(window, color_food, (f[0], f[1], size_default, size_default))
     # drawing font
-    textsurface = font.render(f'Score: {score}', False, (240, 0, 0))
+    textsurface = font.render(f'Score: {score}', False, color_food)
     window.blit(textsurface, (0, 0))
     # update whats shown
     pygame.display.update()
