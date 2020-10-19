@@ -103,15 +103,14 @@ def read_scores():
         lines = file.readlines()
         scores = [int(line.strip()) for line in lines]
     # set new highscore
-    set = False
+    before = 0
     for i, num in enumerate(scores):
-        before = num
-        if not set and num < score:
+        if not highscore and num < score:
             scores[i] = score
             highscore = True
-            set = True
-        else:
+        elif highscore:
             scores[i] = before
+        before = num
     # write new highscore to file
     if highscore:
         with open('scores.csv', 'w') as file:
