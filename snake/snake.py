@@ -66,23 +66,7 @@ def end_screen():
     # draw end screen
     window.fill(color_background)
     # read scores from .csv file and update
-    highscore = False
-    scores = []
-    # read scores
-    with open('scores.csv', 'r') as file:
-        lines = file.readlines()
-        scores = [int(line.strip()) for line in lines]
-    # set new highscore
-    for i, num in enumerate(scores):
-        if num < score:
-            scores[i] = score
-            highscore = True
-            break 
-    # write new highscore to file
-    if highscore:
-        with open('scores.csv', 'w') as file:
-            for num in scores:
-                file.write(f'{str(num)}\n')
+    scores, highscore = read_scores()
     # display scores
     score_font = pygame.font.SysFont('Arial', 50, True, False)
     score_surface = score_font.render(f'Your Score is: {score}', False, color_snake_body)
@@ -110,6 +94,31 @@ def end_screen():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     return True
+
+def read_scores():
+    scores = []
+    highscore = False
+    # read scores
+    with open('scores.csv', 'r') as file:
+        lines = file.readlines()
+        scores = [int(line.strip()) for line in lines]
+    # set new highscore
+    set = False
+    for i, num in enumerate(scores):
+        before = num
+        if not set and num < score:
+            scores[i] = score
+            highscore = True
+            set = True
+        else:
+            scores[i] = before
+    # write new highscore to file
+    if highscore:
+        with open('scores.csv', 'w') as file:
+            for num in scores:
+                file.write(f'{str(num)}\n')
+
+    return (scores, highscore)
 
 def check_events():
     global running, motion, play_again
