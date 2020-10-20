@@ -87,7 +87,7 @@ def end_screen():
     window.blit(score_surface, (int(size_window * 0.15), int(size_window * 0.88)))
     pygame.display.update()
     # check if user want to play again
-    while True: 
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
@@ -124,7 +124,7 @@ def check_events():
     for event in pygame.event.get():
         # checking for quit
         if event.type == pygame.QUIT:
-            running = False  
+            running = False
             play_again = False
         # checking for movement
         elif event.type == pygame.KEYDOWN:
@@ -215,6 +215,7 @@ def draw():
     window.blit(textsurface, (0, 0))
     # update whats shown
     pygame.display.update()
+
 
 game_loop()
 pygame.quit()
