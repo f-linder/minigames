@@ -218,5 +218,6 @@ def draw():
 
 
 game_loop()
+pygame.font.quit()
 pygame.quit()
 exit()
