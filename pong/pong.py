@@ -1,5 +1,6 @@
 import pygame 
 import math
+import random
 
 # initialize
 pygame.init()
@@ -36,6 +37,7 @@ bar_right = (window_width - bar_indent - bar_width, int((window_height - bar_hei
 bar_left = (bar_indent, int((window_height - bar_height) / 2))
 # game variables
 running = True
+new_round = True
 
 def game_loop():
     while running:
@@ -50,14 +52,35 @@ def draw():
     pygame.draw.rect(window, white, (bar_left[0], int(bar_left[1]), bar_width, bar_height))
     pygame.draw.rect(window, white, (bar_right[0], int(bar_right[1]), bar_width, bar_height))
     # draw ball
-    pygame.draw.circle(window, white, ball_coordinates, ball_radius)
+    pygame.draw.circle(window, white, (int(ball_coordinates[0]), int(ball_coordinates[1])), ball_radius)
     pygame.display.update()
 
 def move_ball():
-    fill = "filled"
+    global ball_coordinates, new_round, ball_angel, score_left, score_right
+    # neue runde -> ball in Richtung des Gewinners des letzten Punkts und repositionieren in Mitte
+    if new_round:
+        if scored_last == "left":
+            ball_angel = (random.randint(0, 101) / 100, random.randint(-100, 100) / 100)
+        elif scored_last == "right":
+            ball_angel = (-random.randint(0, 101) / 100, random.randint(-100, 100) / 100)
+        ball_coordinates = (int(window_width / 2), int(window_height / 2))
+        new_round = False
+    else: 
+        # links raus -> rechts gewinnt Runde
+        if ball_coordinates[0] - ball_radius <= 0:
+            new_round = True
+            score_right += 1
+        # rechts raus -> links gewinnt Runde
+        elif ball_coordinates[0] + ball_radius >= window_width:
+            new_round = True
+            score_left += 1
+        # normal
+        else:
+            ball_coordinates = (ball_coordinates[0] + ball_angel[0] * speed, ball_coordinates[1] + ball_angel[1] * speed)
+
 
 def get_ball_angel():
-    fill = "filled"
+    fill = "filler"
 
 def check_events():
     global running, bar_left, bar_right
