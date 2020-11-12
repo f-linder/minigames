@@ -102,7 +102,6 @@ def move_ball():
         else:
             ball_coordinates = (ball_coordinates[0] + math.cos(ball_direction_rad) * speed, ball_coordinates[1] + math.sin(ball_direction_rad) * speed)
 
-
 def detect_ball_colision():
     global ball_direction_rad, hit_last
     # top or bottom hit
@@ -129,7 +128,6 @@ def detect_ball_colision():
 
 def get_pressed(leftright, updown):
     keys = pygame.key.get_pressed()
-
     if leftright == "right" and updown == "up" and keys[pygame.K_UP]:
         return True
     elif leftright == "right" and updown == "down" and keys[pygame.K_DOWN]:
@@ -138,7 +136,6 @@ def get_pressed(leftright, updown):
         return True
     elif leftright == "left" and updown == "down" and keys[pygame.K_s]:
         return True
-
     return False
 
 def check_events():
