@@ -77,11 +77,11 @@ def move_ball():
         # ball fliegt am beginn nach links
         if scored_last == "right":
             hit_last = "left"
-            ball_direction_rad = random.uniform(math.pi * -0.33, math.pi * 0.33)
+            ball_direction_rad = 0# random.uniform(math.pi * -0.33, math.pi * 0.33)
         # ball fliegt am beginn nach rechts
         elif scored_last == "left":
             hit_last = "right"
-            ball_direction_rad = random.uniform(math.pi * 0.66, math.pi * 1.33)
+            ball_direction_rad =math.pi# random.uniform(math.pi * 0.66, math.pi * 1.33)
         else:
             print("ERROR")
 
@@ -111,18 +111,18 @@ def detect_ball_colision():
     # right bar hit
     elif hit_last == "left" and math.ceil(ball_coordinates[0] + ball_radius) <= window_width - bar_indent - bar_width and math.ceil(ball_coordinates[0] + ball_radius) >= window_width - bar_indent - bar_width - 5 and math.ceil(ball_coordinates[1]) >= bar_right[1] and math.ceil(ball_coordinates[1]) <= bar_right[1] + bar_height:
         if get_pressed("right", "up"):
-            ball_direction_rad = math.pi - ball_direction_rad + 0.15
+            ball_direction_rad = math.pi - ball_direction_rad + 0.2
         elif get_pressed("right", "down"):
-            ball_direction_rad = math.pi - ball_direction_rad - 0.15
+            ball_direction_rad = math.pi - ball_direction_rad - 0.2
         else: 
             ball_direction_rad = math.pi - ball_direction_rad
         hit_last = "right"
     # left bar hit
     elif hit_last == "right" and math.ceil(ball_coordinates[0] - ball_radius) >= bar_indent + bar_width and math.ceil(ball_coordinates[0] - ball_radius) <= bar_indent + bar_width + 5 and math.ceil(ball_coordinates[1]) >= bar_left[1] and math.ceil(ball_coordinates[1]) <= bar_left[1] + bar_height:
         if get_pressed("left", "up"):
-            ball_direction_rad = math.pi - ball_direction_rad + 0.15
+            ball_direction_rad = math.pi - ball_direction_rad - 0.2
         elif get_pressed("left", "down"):
-            ball_direction_rad = math.pi - ball_direction_rad - 0.15
+            ball_direction_rad = math.pi - ball_direction_rad + 0.2
         else: 
             ball_direction_rad = math.pi - ball_direction_rad
         hit_last = "left"
@@ -134,13 +134,12 @@ def get_pressed(leftright, updown):
         return True
     elif leftright == "right" and updown == "down" and keys[pygame.K_DOWN]:
         return True
-    elif leftright == "left" and updown == "up" and keys[pygame.K_UP]:
+    elif leftright == "left" and updown == "up" and keys[pygame.K_w]:
         return True
-    elif leftright == "left" and updown == "down" and keys[pygame.K_DOWN]:
+    elif leftright == "left" and updown == "down" and keys[pygame.K_s]:
         return True
 
     return False
-
 
 def check_events():
     global running, bar_left, bar_right
