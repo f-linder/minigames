@@ -26,8 +26,9 @@ scored_last = "left"
 font = pygame.font.SysFont('Arial', 30, True, False)
 # ball
 ball_coordinates = (int(window_width / 2), int(window_height / 2))
-ball_angel = (-1, 0)
-speed = 0.5
+speed = 5
+ball_x_speed = 0
+ball_y_speed = 0
 ball_radius = 10
 # bars
 bar_indent = 50
@@ -38,9 +39,12 @@ bar_left = (bar_indent, int((window_height - bar_height) / 2))
 # game variables
 running = True
 new_round = True
+# clock
+clock = pygame.time.Clock()
 
 def game_loop():
     while running:
+        clock.tick(60)
         get_ball_angel()
         check_events()
         move_ball()
@@ -55,28 +59,37 @@ def draw():
     pygame.draw.circle(window, white, (int(ball_coordinates[0]), int(ball_coordinates[1])), ball_radius)
     pygame.display.update()
 
+def get_plus_or_minus():
+    if random.randint(0, 2) >= 1:
+        return -1
+    else:
+        return 1
+
 def move_ball():
-    global ball_coordinates, new_round, ball_angel, score_left, score_right
+    global ball_coordinates, new_round, ball_x_speed, ball_y_speed, score_left, score_right, scored_last
     # neue runde -> ball in Richtung des Gewinners des letzten Punkts und repositionieren in Mitte
     if new_round:
-        if scored_last == "left":
-            ball_angel = (random.randint(0, 101) / 100, random.randint(-100, 100) / 100)
-        elif scored_last == "right":
-            ball_angel = (-random.randint(0, 101) / 100, random.randint(-100, 100) / 100)
+        #
+        # TO IMPLEMENT
+        # ANGEL WITH X AND Y
+        #
+
         ball_coordinates = (int(window_width / 2), int(window_height / 2))
         new_round = False
     else: 
         # links raus -> rechts gewinnt Runde
         if ball_coordinates[0] - ball_radius <= 0:
             new_round = True
+            scored_last = "right"
             score_right += 1
         # rechts raus -> links gewinnt Runde
         elif ball_coordinates[0] + ball_radius >= window_width:
             new_round = True
+            scored_last = "left"
             score_left += 1
         # normal
         else:
-            ball_coordinates = (ball_coordinates[0] + ball_angel[0] * speed, ball_coordinates[1] + ball_angel[1] * speed)
+            ball_coordinates = (ball_coordinates[0] + math.cos(ball_angel[0]) * speed, ball_coordinates[1] + math.sin(ball_angel[1]) * speed)
 
 
 def get_ball_angel():
