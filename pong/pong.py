@@ -9,8 +9,10 @@ pygame.font.init()
 window_width = 1000
 window_height = 600
 size_default = 5
+score_height = 100
 # window
-window = pygame.display.set_mode((window_width, window_height))
+window = pygame.display.set_mode((window_width, window_height + score_height))
+font = pygame.font.SysFont('Arial', 50, True, False)
 # colors
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -23,13 +25,13 @@ game_round = 0
 score_left = 0
 score_right = 0
 scored_last = "left"
-font = pygame.font.SysFont('Arial', 30, True, False)
+hit_last = "left"
+font = pygame.font.SysFont('Arial', 50, True, False)
 # ball
 ball_coordinates = (int(window_width / 2), int(window_height / 2))
-speed = 5
-ball_x_speed = 0
-ball_y_speed = 0
+speed = 7
 ball_radius = 10
+ball_direction_rad = 0
 # bars
 bar_indent = 50
 bar_height = 100
@@ -44,8 +46,8 @@ clock = pygame.time.Clock()
 
 def game_loop():
     while running:
-        clock.tick(60)
-        get_ball_angel()
+        clock.tick(45)
+        detect_ball_colision()
         check_events()
         move_ball()
         draw()
@@ -57,22 +59,31 @@ def draw():
     pygame.draw.rect(window, white, (bar_right[0], int(bar_right[1]), bar_width, bar_height))
     # draw ball
     pygame.draw.circle(window, white, (int(ball_coordinates[0]), int(ball_coordinates[1])), ball_radius)
+    # draw lines
+    pygame.draw.line(window, white, (0, window_height), (window_width, window_height), 5)
+    pygame.draw.line(window, white, (int(window_width / 2), 0), (int(window_width / 2), window_height + score_height), 5)
+    # font
+    score_surface = font.render(str(score_left), False, white)
+    window.blit(score_surface, (int(window_width * 0.25), int((window_height + score_height * 0.25))))
+    score_surface = font.render(str(score_right), False, white)
+    window.blit(score_surface, (int(window_width * 0.75), int((window_height + score_height * 0.25))))
+
     pygame.display.update()
 
-def get_plus_or_minus():
-    if random.randint(0, 2) >= 1:
-        return -1
-    else:
-        return 1
-
 def move_ball():
-    global ball_coordinates, new_round, ball_x_speed, ball_y_speed, score_left, score_right, scored_last
+    global ball_coordinates, new_round, score_left, score_right, scored_last, ball_direction_rad, hit_last
     # neue runde -> ball in Richtung des Gewinners des letzten Punkts und repositionieren in Mitte
     if new_round:
-        #
-        # TO IMPLEMENT
-        # ANGEL WITH X AND Y
-        #
+        # ball fliegt am beginn nach links
+        if scored_last == "right":
+            hit_last = "left"
+            ball_direction_rad = 0# random.uniform(math.pi * -0.33, math.pi * 0.33)
+        # ball fliegt am beginn nach rechts
+        elif scored_last == "left":
+            hit_last = "right"
+            ball_direction_rad =math.pi# random.uniform(math.pi * 0.66, math.pi * 1.33)
+        else:
+            print("ERROR")
 
         ball_coordinates = (int(window_width / 2), int(window_height / 2))
         new_round = False
@@ -89,11 +100,43 @@ def move_ball():
             score_left += 1
         # normal
         else:
-            ball_coordinates = (ball_coordinates[0] + math.cos(ball_angel[0]) * speed, ball_coordinates[1] + math.sin(ball_angel[1]) * speed)
+            ball_coordinates = (ball_coordinates[0] + math.cos(ball_direction_rad) * speed, ball_coordinates[1] + math.sin(ball_direction_rad) * speed)
 
+def detect_ball_colision():
+    global ball_direction_rad, hit_last
+    # top or bottom hit
+    if ball_coordinates[1] - ball_radius <= 0 or ball_coordinates[1] + ball_radius >= window_height:
+        ball_direction_rad = -ball_direction_rad
+    # right bar hit
+    elif hit_last == "left" and math.ceil(ball_coordinates[0] + ball_radius) <= window_width - bar_indent - bar_width and math.ceil(ball_coordinates[0] + ball_radius) >= window_width - bar_indent - bar_width - 5 and math.ceil(ball_coordinates[1]) >= bar_right[1] and math.ceil(ball_coordinates[1]) <= bar_right[1] + bar_height:
+        if get_pressed("right", "up"):
+            ball_direction_rad = math.pi - ball_direction_rad + 0.2
+        elif get_pressed("right", "down"):
+            ball_direction_rad = math.pi - ball_direction_rad - 0.2
+        else: 
+            ball_direction_rad = math.pi - ball_direction_rad
+        hit_last = "right"
+    # left bar hit
+    elif hit_last == "right" and math.ceil(ball_coordinates[0] - ball_radius) >= bar_indent + bar_width and math.ceil(ball_coordinates[0] - ball_radius) <= bar_indent + bar_width + 5 and math.ceil(ball_coordinates[1]) >= bar_left[1] and math.ceil(ball_coordinates[1]) <= bar_left[1] + bar_height:
+        if get_pressed("left", "up"):
+            ball_direction_rad = math.pi - ball_direction_rad - 0.2
+        elif get_pressed("left", "down"):
+            ball_direction_rad = math.pi - ball_direction_rad + 0.2
+        else: 
+            ball_direction_rad = math.pi - ball_direction_rad
+        hit_last = "left"
 
-def get_ball_angel():
-    fill = "filler"
+def get_pressed(leftright, updown):
+    keys = pygame.key.get_pressed()
+    if leftright == "right" and updown == "up" and keys[pygame.K_UP]:
+        return True
+    elif leftright == "right" and updown == "down" and keys[pygame.K_DOWN]:
+        return True
+    elif leftright == "left" and updown == "up" and keys[pygame.K_w]:
+        return True
+    elif leftright == "left" and updown == "down" and keys[pygame.K_s]:
+        return True
+    return False
 
 def check_events():
     global running, bar_left, bar_right
