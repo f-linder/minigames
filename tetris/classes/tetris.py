@@ -1,4 +1,4 @@
-from .object import Object
+from .gameobject import Object
 import pygame
 import random
 
@@ -10,8 +10,10 @@ class Tetris:
         pygame.display.set_caption("Tetris") 
         image = pygame.image.load("tetris.png")
         pygame.display.set_icon(image)
+        pygame.clock.tick(60)
         # colors
         self.black = (0, 0, 0)
+        self.white = (255, 255, 255)
         self.color_background = (244, 228, 215)
         self.color_border = (169, 169, 169)
         self.color_side = (105, 105, 105)
@@ -36,6 +38,7 @@ class Tetris:
         self.rows = 20
         self.columns = 10
         self.bar_columns = 6
+        self.width = self.columns + self.bar_columns + 2
         self.pixel_per_casket = 30
         self.game_height = (self.rows + 2) * self.pixel_per_casket
         self.game_width = (self.columns + 2) * self.pixel_per_casket
@@ -83,39 +86,40 @@ class Tetris:
         self.window.fill(self.color_background)
 
         # drawing border
-        for x in range(self.columns + self.bar_columns + 2):
+        for x in range(self.width):
             # top
-            self.draw_block(x - 1, -1, self.color_side)
+            self.draw_side(x, 0)
             # bottom
-            self.draw_block(x - 1, self.rows, self.color_side)
+            self.draw_side(x, self.rows + 1)
         for y in range(1, self.rows + 1):
             # left
-            self.draw_block(-1, y - 1, self.color_side)
+            self.draw_side(0, y)
             # right middle
-            self.draw_block(self.columns, y - 1, self.color_side)
+            self.draw_side(self.columns + 1, y)
             # right
-            self.draw_block(self.columns + self.bar_columns, y - 1, self.color_side)
+            self.draw_side(self.width - 1, y)
 
         # horizontal lines at right
-        for x in range(self.columns + 2, self.bar_width + self.columns + 1):
-            self.draw_block(x - 1, 6, self.color_side)
+        for x in range(self.bar_columns + 1):
+            self.draw_side(x + self.columns + 2, 6)
         
         # drawing tetrominos
         for x, row in enumerate(self.array):
             for y, typ in enumerate(row):
                 if typ != -1:
-                    self.draw_block(x, y, self.type_to_color[typ])
+                    self.draw_tetronimo(x, y, typ)
 
         pygame.display.update()
 
-    def draw_block(self, x, y, color):
-        if color == self.color_side:
-            # side inside
-            pygame.draw.rect(self.window, self.color_border, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
-            # side border
-            pygame.draw.rect(self.window, color, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket), 8)
-        else:
-            # normal inside
-            pygame.draw.rect(self.window, color, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
-            # normal border
-            pygame.draw.rect(self.window, self.black, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket), 3)
+    def draw_tetronimo(self, x, y, color):
+        # normal inside
+        pygame.draw.rect(self.window, color, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
+        # normal border
+        pygame.draw.rect(self.window, self.white, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket), 2)
+
+    def draw_side(self, x, y):
+        # side inside
+        pygame.draw.rect(self.window, self.color_border, (x * self.pixel_per_casket, y * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
+        # side border
+        pygame.draw.rect(self.window, self.color_side, (x * self.pixel_per_casket, y * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket), 8)
+
