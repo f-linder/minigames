@@ -26,14 +26,16 @@ class iBlock:
 
         # block below
         # bounds
-        if pos[1] + 1 < 0:
+        if pos[1] + 1 >= 20:
             return False
         # free
         if array[pos[0]][pos[1] + 1] != -1:
             return False
         # two blocks above
         # free (bounds not needed)
-        if array[pos[0]][pos[1] + 1] != -1 or array[pos[0]][pos[1] + 2] != -1:
+        if pos[1] - 1 < 0:
+            return True
+        if array[pos[0]][pos[1] - 1] != -1 or array[pos[0]][pos[1] - 2] != -1:
             return False
 
         return True
@@ -41,7 +43,7 @@ class iBlock:
     def to_horizontal(self):
         # reference block, 2nd from below when vertical
         pos = self.pos[1]
-        self.pos = [[x, pos[y]] for x in range(pos[0] - 1, pos[1] + 2)]
+        self.pos = [[x, pos[1]] for x in range(pos[0] - 1, pos[0] + 3)]
 
     def to_horizontal_possible(self, array):
         # refrence block, 2nd from below when vertical
@@ -55,4 +57,5 @@ class iBlock:
             return False
         
         return True
+
     
