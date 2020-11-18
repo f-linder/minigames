@@ -1,5 +1,6 @@
 import pygame
 import random
+import copy
 from .block import Block
 
 class Tetris:
@@ -8,10 +9,11 @@ class Tetris:
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption("Tetris") 
-        image = pygame.image.load("tetris.png")
+        image = pygame.image.load("resources/tetris.png")
+
         pygame.display.set_icon(image)
         self.clock = pygame.time.Clock()
-        self.time_last_draw = 0
+        self.time_last_event = 0
         self.time_last_move = 0
         # colors
         self.black = (0, 0, 0)
@@ -52,7 +54,7 @@ class Tetris:
         self.font = pygame.font.SysFont("Arial", 30, True, False)
         self.next = None
         self.current = None
-        self.current_last_pos = None
+        self.projection = None
         self.array = []
         self.score = None
         self.score_lines = None
@@ -61,16 +63,43 @@ class Tetris:
     
     def game_loop(self):
         self.setup()
-        while self.running:
-            self.check_events()
-            self.draw_current()
-            dt = self.clock.tick()
-            self.time_last_move += dt
-            if self.time_last_move > 333:
-                self.time_last_move = 0
-                self.move()
+        while self.play_again:
+
+            while self.running:
+                self.draw_current()
+                self.check_events()
+                dt = self.clock.tick()
+                self.time_last_move += dt
+                if self.time_last_move > 400:
+                    self.time_last_move = 0
+                    self.move()
+
+            self.playagain = self.endscreen()
+
         self.close()
     
+    def endscreen(self):
+        # draw block from bottom to top
+        for y in range(19, -1, -1):
+            for x in range(10):
+                self.draw_side(x + 1, y + 1)
+                pygame.time.wait(10)
+                pygame.display.update()
+        # drawing end screen
+      
+    
+    def update_projection(self):
+        # drawing over old projection
+        if self.projection:
+            self.overdraw(self.projection.block.pos)
+        # getting new projection
+        self.projection = copy.deepcopy(self.current)
+        while not self.projection.fixed:
+            self.projection.move(self.array, 0, 1)
+        # drawing the new projection
+        for pos in self.projection.block.pos:
+            self.draw_projection(pos[0], pos[1])
+
     def move(self):
         # drawing over current position before move and redrawing
         self.overdraw(self.current.block.pos)
@@ -83,7 +112,15 @@ class Tetris:
                 self.array[pos[0]][pos[1]] = typ
                 self.draw_tetronimo(pos[0], pos[1], self.type_to_color[typ])
             self.current = self.next
-            self.next = Block(0)
+            # game ends if the spawning block is on top of an existing one
+            for pos in self.current.block.pos:
+                if pos[1] < 0:
+                    continue
+                if self.array[pos[0]][pos[1]] != -1:   
+                    self.running = False
+            self.projection = None
+            self.update_projection()
+            self.next = Block(random.randint(0, 1))
             pygame.display.update()
 
     def check_events(self):
@@ -98,11 +135,13 @@ class Tetris:
                 if event.key == pygame.K_LEFT:
                     self.overdraw(self.current.block.pos)
                     self.current.move(self.array, -1, 0)
+                    self.update_projection()
                     self.draw_current()
                 # move right
                 elif event.key == pygame.K_RIGHT:
                     self.overdraw(self.current.block.pos)
                     self.current.move(self.array, 1, 0)
+                    self.update_projection()
                     self.draw_current()
                 # move down
                 elif event.key == pygame.K_DOWN:
@@ -112,19 +151,24 @@ class Tetris:
                 # rotate
                 elif event.key == pygame.K_x:
                     self.overdraw(self.current.block.pos)
-                    self.current.block.change_state(self.array)
+                    self.current.change_state(self.array)
                     self.draw_current()
+                    self.update_projection()
+                # move to bottom
+                elif event.key == pygame.K_SPACE:
+                    self.overdraw(self.current.block.pos)
+                    self.current = self.projection
+                    self.move()
         
-
     def setup(self):
         self.running = True
         self.score = 0
         self.score_lines = 0
-        self.next = Block(0)
-        self.current = Block(0)
-        self.current_last_pos = self.current.block.pos.copy()
+        self.next = Block(random.randint(0, 1))
+        self.current = Block(random.randint(0, 1))
         self.array = [[-1 for i in range(self.rows)] for j in range(self.columns)]
         self.draw_start()
+        self.update_projection()
 
     def close(self):
         pygame.font.quit()
@@ -160,14 +204,16 @@ class Tetris:
     def draw_tetronimo(self, x, y, color):
         if x < 0 or x >= 10 or y < 0 or y >= 20:
             return
-        # normal inside
         pygame.draw.rect(self.window, color, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
         pygame.draw.rect(self.window, self.white, ((x + 1) * self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
-        
+    
+    def draw_projection(self, x, y):
+        pygame.draw.rect(self.window, self.color_side, ((x + 1) * self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
+    
     def draw_side(self, x, y):
-        # side border
-        pygame.draw.rect(self.window, self.color_side, (x * self.pixel_per_casket, y * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
         # side inside
+        pygame.draw.rect(self.window, self.color_side, (x * self.pixel_per_casket, y * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
+        # side border
         pygame.draw.rect(self.window, self.color_border, (x * self.pixel_per_casket + 6, y * self.pixel_per_casket + 6, self.pixel_per_casket - 12, self.pixel_per_casket - 12))
         
     def overdraw(self, pos):

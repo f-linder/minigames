@@ -5,7 +5,7 @@ class iBlock:
         # state = 0 -> horizontal
         # state = 1 -> vertical
         self.pos = [[x, 0] for x in range(3, 7)]
-    
+
     def change_state(self, array):
         if self.state == 0 and self.to_vertical_possible(array):
             self.to_vertical()
@@ -18,7 +18,7 @@ class iBlock:
     def to_vertical(self):
         # reference block, 2nd to the left
         pos = self.pos[1]
-        self.pos = [[pos[0], y] for y in range(pos[1] - 1, pos[1] + 3)]
+        self.pos = [[pos[0], y] for y in range(pos[1] + 1, pos[1] - 3, -1)]
 
     def to_vertical_possible(self, array):
         # reference block, 2nd to the left when horizontal
@@ -58,4 +58,5 @@ class iBlock:
         
         return True
 
+    
     
