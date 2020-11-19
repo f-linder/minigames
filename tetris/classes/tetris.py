@@ -87,7 +87,56 @@ class Tetris:
                 pygame.display.update()
         # drawing end screen
       
-    
+    def full_line(self):
+        # lines to remove
+        full_lines = []
+        # checking which lines are full and appending them to list
+        for y in range(self.rows):
+            for x in range(10):
+                if self.array[x][y] == -1:
+                    break
+                elif x == 9:
+                    self.score_lines += 1
+                    full_lines.append(y)
+        if len(full_lines) > 0:
+            # removing lines
+            self.remove_lines(full_lines)
+            pygame.display.update()
+            pygame.time.wait(250)
+            # making the rest fall down
+            self.drop_down(full_lines)
+            pygame.display.update()
+
+        
+    def remove_lines(self, lines):
+        # removing blocks in line
+        for y in lines:
+            for x in range(10):
+                self.array[x][y] = -1
+            pygame.draw.rect(self.window, self.white, (self.pixel_per_casket, (y + 1) * self.pixel_per_casket, 10 * self.pixel_per_casket, self.pixel_per_casket))
+
+    def drop_down(self, lines):
+        # for each to be removed... (starting from top)
+        for row in lines:
+            # drop every row...
+            for y in range(row - 1, -1, -1):
+                # one down
+                print(y)
+                for x in range(self.columns):
+                    self.array[x][y + 1] = self.array[x][y]
+            # -1 on top
+            print(self.array)
+            for x in range(10):
+                self.array[x][0] = -1
+        # draw new gamestate
+        # background
+        pygame.draw.rect(self.window, self.color_background, (self.pixel_per_casket, self.pixel_per_casket, self.columns * self.pixel_per_casket, self.rows * self.pixel_per_casket))
+        # board
+        for x in range(self.columns):
+            for y in range(self.rows):
+                if self.array[x][y] != -1:
+                    self.draw_tetronimo(x, y, self.type_to_color[self.array[x][y]])   
+
     def update_projection(self):
         # drawing over old projection
         if self.projection:
@@ -118,9 +167,10 @@ class Tetris:
                     continue
                 if self.array[pos[0]][pos[1]] != -1:   
                     self.running = False
+            self.full_line()
             self.projection = None
             self.update_projection()
-            self.next = Block(random.randint(0, 1))
+            self.next = Block(random.randint(0, 2))
             pygame.display.update()
 
     def check_events(self):
@@ -145,7 +195,6 @@ class Tetris:
                     self.draw_current()
                 # move down
                 elif event.key == pygame.K_DOWN:
-                    self.overdraw(self.current.block.pos)
                     self.current.move(self.array, 0, 1)
                     self.draw_current()
                 # rotate
@@ -164,7 +213,7 @@ class Tetris:
         self.running = True
         self.score = 0
         self.score_lines = 0
-        self.next = Block(random.randint(0, 1))
+        self.next = Block(random.randint(0, 2))
         self.current = Block(random.randint(0, 1))
         self.array = [[-1 for i in range(self.rows)] for j in range(self.columns)]
         self.draw_start()

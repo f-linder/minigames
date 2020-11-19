@@ -29,11 +29,11 @@ class iBlock:
         if pos[1] + 1 >= 20:
             return False
         # free
-        if array[pos[0]][pos[1] + 1] != -1:
+        elif array[pos[0]][pos[1] + 1] != -1:
             return False
         # two blocks above
         # free (bounds not needed)
-        if pos[1] - 1 < 0:
+        if pos[1] - 1 <= 0:
             return True
         if array[pos[0]][pos[1] - 1] != -1 or array[pos[0]][pos[1] - 2] != -1:
             return False

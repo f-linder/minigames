@@ -1,5 +1,6 @@
 from .blocktypes.i_block import iBlock
 from .blocktypes.o_block import oBlock
+from .blocktypes.t_block import tBlock
 
 class Block:
     def __init__(self, typ):
@@ -10,6 +11,8 @@ class Block:
             self.block = iBlock()
         elif typ == 1:
             self.block = oBlock()
+        elif typ == 2:
+            self.block = tBlock()
 
     def move(self, array, x, y):
         if self.move_possible(array, x, y):
