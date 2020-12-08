@@ -219,7 +219,7 @@ class Tetris:
             self.update_projection()
             # overdrawing next
             self.overdraw_next(self.next.block.pos)
-            self.next = Block(random.randint(0, 2))
+            self.next = Block(4)
             # draw next
             color = self.type_to_color[self.next.typ]
             for x, y in self.next.block.pos:
@@ -248,6 +248,7 @@ class Tetris:
                     self.draw_current()
                 # move down
                 elif event.key == pygame.K_DOWN:
+                    self.overdraw(self.current.block.pos)
                     self.current.move(self.array, 0, 1)
                     self.draw_current()
                 # rotate
@@ -268,8 +269,8 @@ class Tetris:
         self.scored_last_round = False
         self.score = 0
         self.score_lines = 0
-        self.next = Block(random.randint(0, 2))
-        self.current = Block(random.randint(0, 1))
+        self.next = Block(4)
+        self.current = Block(4)
         self.array = [[-1 for i in range(self.rows)] for j in range(self.columns)]
         self.draw_start()
         self.update_projection()
@@ -321,6 +322,7 @@ class Tetris:
         pygame.draw.rect(self.window, self.white, ((x + 1) * self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
     
     def draw_projection(self, x, y):
+        pygame.draw.rect(self.window, self.white, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
         pygame.draw.rect(self.window, self.color_side, ((x + 1) * self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
     
     def draw_side(self, x, y):
