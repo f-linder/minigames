@@ -22,7 +22,7 @@ class lBlock():
         elif self.state == 3 and self.to_up_possible(array):
             self.to_up()
             self.state += 1
-        self.state %= 4
+        self.state %= self.num_states
 
     def to_left_possible(self, array):
         # reference is the middle peace

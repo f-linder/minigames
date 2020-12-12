@@ -32,10 +32,10 @@ class Tetris:
             0: self.color_i,
             1: self.color_o,
             2: self.color_t,
-            3: self.color_s,
-            4: self.color_z,
-            5: self.color_j,
-            6: self.color_l,
+            3: self.color_j,
+            4: self.color_l,
+            5: self.color_s,
+            6: self.color_z,
         }
         # attributes
         # sizes
@@ -77,52 +77,6 @@ class Tetris:
             self.play_again = self.endscreen()
         self.close()
 
-    def endscreen(self):
-        # draw block from bottom to top
-        for y in range(19, -1, -1):
-            for x in range(10):
-                self.draw_side(x + 1, y + 1)
-                pygame.time.wait(10)
-                pygame.display.update()
-        # drawing end screen
-        pygame.draw.rect(self.window, self.color_side, (self.pixel_per_casket, self.pixel_per_casket, self.columns * self.pixel_per_casket, self.rows * self.pixel_per_casket))
-        # updating score 
-        scores, highscore = self.read_scores()
-        # score_surface = self.font.render()
-
-        # checking for event
-        while True:
-            for event in pygame.event.get():
-                # quit
-                if event.type == pygame.QUIT:
-                    return False
-                # play again
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    return True
-
-    def read_scores(self):
-        scores = []
-        highscore = False
-        # read scores
-        with open('./resources/scores.csv', 'r') as file:
-            lines = file.readlines()
-            scores = [int(line.strip()) for line in lines]
-        # set new highscore
-        before = 0
-        for i, num in enumerate(scores):
-            if not highscore and num < self.score:
-                scores[i] = self.score
-                highscore = True
-            elif highscore:
-                scores[i] = before
-            before = num
-        # write new highscore to file
-        if highscore:
-            with open('.resources/scores.csv', 'w') as file:
-                for num in scores:
-                    file.write(f'{str(num)}\n')
-
-        return (scores, highscore)
 
     def full_line(self):
         # lines to remove
@@ -219,7 +173,7 @@ class Tetris:
             self.update_projection()
             # overdrawing next
             self.overdraw_next(self.next.block.pos)
-            self.next = Block(4)
+            self.next = Block(random.randint(0, 6))
             # draw next
             color = self.type_to_color[self.next.typ]
             for x, y in self.next.block.pos:
@@ -269,8 +223,8 @@ class Tetris:
         self.scored_last_round = False
         self.score = 0
         self.score_lines = 0
-        self.next = Block(4)
-        self.current = Block(4)
+        self.next = Block(random.randint(0, 6))
+        self.current = Block(random.randint(0, 6))
         self.array = [[-1 for i in range(self.rows)] for j in range(self.columns)]
         self.draw_start()
         self.update_projection()
