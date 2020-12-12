@@ -77,6 +77,52 @@ class Tetris:
             self.play_again = self.endscreen()
         self.close()
 
+    def endscreen(self):
+        # draw block from bottom to top
+        for y in range(19, -1, -1):
+            for x in range(10):
+                self.draw_side(x + 1, y + 1)
+                pygame.time.wait(10)
+                pygame.display.update()
+        # drawing end screen
+        # pygame.draw.rect(self.window, self.color_side, (self.pixel_per_casket, self.pixel_per_casket, self.columns * self.pixel_per_casket, self.rows * self.pixel_per_casket))
+        # updating score 
+        # scores, highscore = self.read_scores()
+        # score_surface = self.font.render()
+
+        # checking for event
+        while True:
+            for event in pygame.event.get():
+                # quit
+                if event.type == pygame.QUIT:
+                    return False
+                # play again
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    return True
+
+    def read_scores(self):
+        scores = []
+        highscore = False
+        # read scores
+        with open('./resources/scores.csv', 'r') as file:
+            lines = file.readlines()
+            scores = [int(line.strip()) for line in lines]
+        # set new highscore
+        before = 0
+        for i, num in enumerate(scores):
+            if not highscore and num < self.score:
+                scores[i] = self.score
+                highscore = True
+            elif highscore:
+                scores[i] = before
+            before = num
+        # write new highscore to file
+        if highscore:
+            with open('.resources/scores.csv', 'w') as file:
+                for num in scores:
+                    file.write(f'{str(num)}\n')
+
+        return (scores, highscore)
 
     def full_line(self):
         # lines to remove
