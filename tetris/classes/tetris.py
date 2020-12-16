@@ -21,13 +21,13 @@ class Tetris:
         self.color_background = (255, 250, 240)
         self.color_border = (169, 169, 169)
         self.color_side = (105, 105, 105)
-        self.color_i = (0, 191, 255)
+        self.color_i = (0, 255, 255)
         self.color_o = (255, 255, 0)
-        self.color_t = (138, 43, 226)
+        self.color_t = (255, 0, 255)
         self.color_s = (0, 255, 0)
         self.color_z = (255, 0, 0)
-        self.color_j = (65, 105, 225)
-        self.color_l = (255, 165, 0)
+        self.color_j = (0, 0, 255)
+        self.color_l = (255, 130, 0)
         self.type_to_color = {
             0: self.color_i,
             1: self.color_o,
@@ -51,14 +51,15 @@ class Tetris:
         self.window = pygame.display.set_mode((self.game_width + self.bar_width, self.game_height))
         self.play_again = True
         self.running = True
-        self.font = pygame.font.SysFont("Arial", 35, True, False)
+        self.font = pygame.font.SysFont("Arial", 30, True, True)
+        self.font_num = pygame.font.SysFont("Arial", 20, True, False)
         self.next = None
         self.current = None
         self.projection = None
         self.array = []
-        self.score = None
-        self.score_lines = None
-        self.combo = 0
+        self.score = 0
+        self.score_lines = 0
+        self.combo = 1
         self.scored_last_round = False
 
         self.game_loop()
@@ -71,7 +72,7 @@ class Tetris:
                 self.check_events()
                 dt = self.clock.tick()
                 self.time_last_move += dt
-                if self.time_last_move > 400:
+                if self.time_last_move > 750 - (self.score_lines * 3):
                     self.time_last_move = 0
                     self.move()
             self.play_again = self.endscreen()
@@ -82,8 +83,8 @@ class Tetris:
         for y in range(19, -1, -1):
             for x in range(10):
                 self.draw_side(x + 1, y + 1)
-                pygame.time.wait(10)
-                pygame.display.update()
+            pygame.time.wait(50)
+            pygame.display.update()
         # drawing end screen
         # pygame.draw.rect(self.window, self.color_side, (self.pixel_per_casket, self.pixel_per_casket, self.columns * self.pixel_per_casket, self.rows * self.pixel_per_casket))
         # updating score 
@@ -138,23 +139,36 @@ class Tetris:
         
         if len(full_lines) > 0:
             # removing lines
-            self.combo *= len(full_lines)
             self.score += self.combo * 1000 * len(full_lines)
+            self.combo += len(full_lines)
             self.remove_lines(full_lines)
             pygame.display.update()
             pygame.time.wait(250)
             # making the rest fall down
             self.drop_down(full_lines)
-            self.draw_score()
-            pygame.display.update()
         else:
-            self.combo = 0
+            self.combo = 1
+        
       
     def draw_score(self):
-        score_surface = self.font.render(f'Score: {self.score}', False, self.color_side)
-        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket, 7 * self.pixel_per_casket))
-        score_surface = self.font.render(f"Lines: {self.score_lines}", False, self.color_side)
-        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket, 9 * self.pixel_per_casket))
+        # overdraw old score
+        for x in range(2, 7):
+            self.overdraw_next([(x, 4)])
+            self.overdraw_next([(x, 5)])
+            self.overdraw_next([(x, 8)])
+            self.overdraw_next([(x, 9)])
+            self.overdraw_next([(x, 12)])
+            self.overdraw_next([(x, 13)])
+        # combo text
+        score_surface = self.font_num.render(f"x {self.combo}", False, self.color_z)
+        self.window.blit(score_surface, ((self.columns + 4) * self.pixel_per_casket, 8.5 * self.pixel_per_casket))
+        # score text
+        score_surface = self.font_num.render(f"{self.score}", False, self.color_z)
+        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 10, 12.5 * self.pixel_per_casket))
+        # lines text
+        score_surface = self.font_num.render(f"{self.score_lines}", False, self.color_z)
+        self.window.blit(score_surface, ((self.columns + 3.5) * self.pixel_per_casket + 10, 16.5 * self.pixel_per_casket))
+
 
     def remove_lines(self, lines):
         # removing blocks in line
@@ -162,7 +176,6 @@ class Tetris:
             for x in range(10):
                 self.array[x][y] = -1
             pygame.draw.rect(self.window, self.white, (self.pixel_per_casket, (y + 1) * self.pixel_per_casket, 10 * self.pixel_per_casket, self.pixel_per_casket))
-            pygame.draw.rect(self.window, self.black, (self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, 10 * self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
 
     def drop_down(self, lines):
         # for each to be removed... (starting from top)
@@ -205,26 +218,28 @@ class Tetris:
             # add current to game state
             typ = self.current.typ
             for pos in self.current.block.pos:
-                self.array[pos[0]][pos[1]] = typ
-                self.draw_tetronimo(pos[0], pos[1], self.type_to_color[typ])
-            self.current = self.next
-            # game ends if the spawning block is on top of an existing one
-            for pos in self.current.block.pos:
+                # if block whos now fixed reaches out of the top
                 if pos[1] < 0:
-                    continue
-                if self.array[pos[0]][pos[1]] != -1:   
                     self.running = False
-            self.full_line()
-            self.projection = None
-            self.update_projection()
-            # overdrawing next
-            self.overdraw_next(self.next.block.pos)
-            self.next = Block(random.randint(0, 6))
-            # draw next
-            color = self.type_to_color[self.next.typ]
-            for x, y in self.next.block.pos:
-                self.draw_next(x, y, color)
-            pygame.display.update()
+                    break
+                else:
+                    self.array[pos[0]][pos[1]] = typ
+                    self.draw_tetronimo(pos[0], pos[1], self.type_to_color[typ])
+            
+            if self.running:
+                self.current = self.next
+                self.full_line()
+                self.projection = None
+                self.update_projection()
+                # overdrawing next
+                self.overdraw_next(self.next.block.pos)
+                self.next = Block(random.randint(0, 6))
+                # draw next
+                color = self.type_to_color[self.next.typ]
+                for x, y in self.next.block.pos:
+                    self.draw_next(x, y, color)
+        self.draw_score()
+        pygame.display.update()
 
     def check_events(self):
         for event in pygame.event.get():
@@ -265,7 +280,7 @@ class Tetris:
         
     def setup(self):
         self.running = True
-        self.combo = 0
+        self.combo = 1
         self.scored_last_round = False
         self.score = 0
         self.score_lines = 0
@@ -283,6 +298,18 @@ class Tetris:
     def draw_start(self):
         self.draw_score()
         self.window.fill(self.color_background)
+        # next text
+        score_surface = self.font.render("Next", False, self.color_z)
+        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 10, 1 * self.pixel_per_casket))
+        # combo text
+        score_surface = self.font.render("Multiplier", False, self.color_z)
+        self.window.blit(score_surface, ((self.columns + 2) * self.pixel_per_casket + 10, 7 * self.pixel_per_casket))
+        # score text
+        score_surface = self.font.render("Score", False, self.color_z)
+        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 5, 11 * self.pixel_per_casket))
+        # lines text
+        score_surface = self.font.render("Lines", False, self.color_z)
+        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 5, 15 * self.pixel_per_casket))
         # draw next
         color = self.type_to_color[self.next.typ]
         for x, y in self.next.block.pos:
@@ -303,6 +330,11 @@ class Tetris:
         # horizontal lines at right
         for x in range(self.bar_columns + 1):
             self.draw_side(x + self.columns + 2, 6)
+            self.draw_side(x + self.columns + 2, 10)
+            self.draw_side(x + self.columns + 2, 14)
+            for y in range(18,21):
+                self.draw_side(x + self.columns + 2, y)
+            
         pygame.display.update()
         
     def draw_current(self):
@@ -312,8 +344,8 @@ class Tetris:
         pygame.display.update()
     
     def draw_next(self, x, y, color):
-        pygame.draw.rect(self.window, color, ((x + self.columns) * self.pixel_per_casket, (y + 3) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
-        pygame.draw.rect(self.window, self.white, ((x + self.columns) * self.pixel_per_casket + 2, (y + 3) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
+        pygame.draw.rect(self.window, color, ((x + self.columns) * self.pixel_per_casket, (y + 4) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
+        pygame.draw.rect(self.window, self.white, ((x + self.columns) * self.pixel_per_casket + 2, (y + 4) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
 
     def draw_tetronimo(self, x, y, color):
         if x < 0 or x >= 10 or y < 0 or y >= 20:
@@ -322,8 +354,9 @@ class Tetris:
         pygame.draw.rect(self.window, self.white, ((x + 1) * self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
     
     def draw_projection(self, x, y):
-        pygame.draw.rect(self.window, self.white, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
-        pygame.draw.rect(self.window, self.color_side, ((x + 1) * self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
+        if y >= 0:
+            pygame.draw.rect(self.window, self.white, ((x + 1) * self.pixel_per_casket, (y + 1) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
+            pygame.draw.rect(self.window, self.color_side, ((x + 1) * self.pixel_per_casket + 2, (y + 1) * self.pixel_per_casket + 2, self.pixel_per_casket - 4, self.pixel_per_casket - 4), 2)
     
     def draw_side(self, x, y):
         # side inside
@@ -333,7 +366,7 @@ class Tetris:
         
     def overdraw_next(self, pos):
         for p in pos:
-            pygame.draw.rect(self.window, self.color_background, ((p[0] + self.columns) * self.pixel_per_casket, (p[1] + 3) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
+            pygame.draw.rect(self.window, self.color_background, ((p[0] + self.columns) * self.pixel_per_casket, (p[1] + 4) * self.pixel_per_casket, self.pixel_per_casket, self.pixel_per_casket))
     
     def overdraw(self, pos):
         for p in pos:
