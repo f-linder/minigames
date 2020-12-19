@@ -81,15 +81,37 @@ class Tetris:
     def endscreen(self):
         # draw block from bottom to top
         for y in range(19, -1, -1):
-            for x in range(10):
+            for x in range(self.width):
                 self.draw_side(x + 1, y + 1)
             pygame.time.wait(50)
             pygame.display.update()
         # drawing end screen
-        # pygame.draw.rect(self.window, self.color_side, (self.pixel_per_casket, self.pixel_per_casket, self.columns * self.pixel_per_casket, self.rows * self.pixel_per_casket))
+        pygame.draw.rect(self.window, self.color_border, (self.pixel_per_casket, self.pixel_per_casket, (self.width - 2) * self.pixel_per_casket, self.rows * self.pixel_per_casket))
         # updating score 
-        # scores, highscore = self.read_scores()
-        # score_surface = self.font.render()
+        scores, highscore = self.read_scores()
+        # drawing fonts
+        font = pygame.font.SysFont("Arial", 50, True, False)
+        score_surface = font.render("Your Score", False, self.color_z, self.window)
+        self.window.blit(score_surface, (self.pixel_per_casket * 5, self.pixel_per_casket * 1.5))
+
+        score_surface = font.render(f"{self.score}", False, self.color_s, self.window)
+        self.window.blit(score_surface, (self.pixel_per_casket * 2, self.pixel_per_casket * 3 + self.pixel_per_casket / 3))
+
+        score_surface = font.render("Highscores", False, self.color_z, self.window)
+        self.window.blit(score_surface, (self.pixel_per_casket * 5, self.pixel_per_casket * 5.5))
+
+        for i, num in enumerate(scores):
+            if num == self.score:
+                score_surface = font.render(f"{i + 1}. Place: {num}", False, self.color_s)
+            else:
+                score_surface = font.render(f"{i + 1}. Place: {num}", False, self.color_z)
+            self.window.blit(score_surface, (self.pixel_per_casket * 1.5, self.pixel_per_casket * (7.5 + i * 2)))
+
+        score_surface = self.font.render("Press Spacebar to play again", False, self.color_z)
+        self.window.blit(score_surface, (self.pixel_per_casket * 2, self.pixel_per_casket * 19))
+
+        
+        pygame.display.update()
 
         # checking for event
         while True:
@@ -103,25 +125,23 @@ class Tetris:
 
     def read_scores(self):
         scores = []
-        highscore = False
         # read scores
-        with open('./resources/scores.csv', 'r') as file:
+        with open('resources/scores.csv', 'r') as file:
             lines = file.readlines()
             scores = [int(line.strip()) for line in lines]
         # set new highscore
-        before = 0
-        for i, num in enumerate(scores):
-            if not highscore and num < self.score:
-                scores[i] = self.score
-                highscore = True
-            elif highscore:
-                scores[i] = before
-            before = num
+        scores.append(self.score)
+        scores.sort()
+        scores = scores[::-1]
+        scores = scores[:5]
         # write new highscore to file
-        if highscore:
-            with open('.resources/scores.csv', 'w') as file:
-                for num in scores:
-                    file.write(f'{str(num)}\n')
+        with open('resources/scores.csv', 'w') as file:
+            for num in scores:
+                file.write(f'{str(num)}\n')
+
+        highscore = False
+        if self.score in scores:
+            highscore = True
 
         return (scores, highscore)
 
@@ -299,17 +319,17 @@ class Tetris:
         self.draw_score()
         self.window.fill(self.color_background)
         # next text
-        score_surface = self.font.render("Next", False, self.color_z)
-        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 10, 1 * self.pixel_per_casket))
+        score_surface = self.font.render("Next", False, self.color_side)
+        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 10, 1 * self.pixel_per_casket + 5))
         # combo text
-        score_surface = self.font.render("Multiplier", False, self.color_z)
-        self.window.blit(score_surface, ((self.columns + 2) * self.pixel_per_casket + 10, 7 * self.pixel_per_casket))
+        score_surface = self.font.render("Multiplier", False, self.color_side)
+        self.window.blit(score_surface, ((self.columns + 2) * self.pixel_per_casket + 10, 7 * self.pixel_per_casket + 5))
         # score text
-        score_surface = self.font.render("Score", False, self.color_z)
-        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 5, 11 * self.pixel_per_casket))
+        score_surface = self.font.render("Score", False, self.color_side)
+        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 5, 11 * self.pixel_per_casket + 5))
         # lines text
-        score_surface = self.font.render("Lines", False, self.color_z)
-        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 5, 15 * self.pixel_per_casket))
+        score_surface = self.font.render("Lines", False, self.color_side)
+        self.window.blit(score_surface, ((self.columns + 3) * self.pixel_per_casket + 5, 15 * self.pixel_per_casket + 5))
         # draw next
         color = self.type_to_color[self.next.typ]
         for x, y in self.next.block.pos:
